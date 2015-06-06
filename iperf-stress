@@ -1,0 +1,14 @@
+#! /usr/bin/env php
+
+<?php
+
+use Symfony\Component\Console\Application;
+
+require __DIR__.'/./vendor/autoload.php';
+
+$app = new Application('iperf Stress Tester', '0.1.0');
+
+$app->add(new Appkr\LoopCommand);
+$app->add(new Appkr\HistoryCommand);
+
+$app->run();
