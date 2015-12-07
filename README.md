@@ -1,177 +1,125 @@
-# 목차
-- [개요](#overview)
-- [설치](#install)
-- [실행](#run)
+# iperf-stress
 
-<a name="overview"></a>
-# 개요
+이 프로젝트는 아래와 같은 3가지의 학습 목적으로 공개되었다.
 
-iperf 서버 스트레스 테스트를 위한 콘솔 코맨드 툴이다. 스트레스 상황에서의 `iperf` 결과 값의 영향, 용량 예측, 동접 제한 예측 등의 목적으로 개발되었다. Linux PC/Mac에서 여러 개의 콘솔 창을 띄워 놓고, 본 `iperf-stress` 코맨드를 이용하여 스트레스 상황을 연출할 수 있다.
- 
-이 툴은 스트레스 테스트를 편리하게 하기 위한 기본 옵션들을 내장한 시스템 `iperf` 또는 `novak/iperf`코맨드의 Wrapper이다. 
+1. `symfony/console` 콤포넌트를 이용한 콘솔 코맨드 개발 학습
+2. Non-Laravel 프로젝트에서 `illuminate/database (== Eolquent)` 콤포넌트의 사용법 학습
+3. Non-Laravel 프로젝트에서 `illumicate/validation` 콤포넌트의 사용법 학습
 
-<a name="install"></a>
-# 설치
+## 목차
+- 개요
+- 설치
+- 실행
+- 다운로드 속도 측정
 
-<a name="dependency"></a>
-## 시스템 요구사항
+## 개요
 
-- Linux 또는 Mac OS [^1]
-- iperf (콘솔에서 `iperf -v` 로 확인 가능)
-- php5.4 이상 (콘솔에서 `php -v` 로 확인 가능) [^2]
+`iperf` 는 인터넷 속도 측정을 위한 CLI 이다. 이 프로젝트의 `iperf-stress` 는 `iperf` 를 Wrapping 한 CLI 이다. `iperf-stress` 는 스트레스 상황에서, `iperf` 속도 측정 서버의 측정 결과 안정성, 서버 용량 예측, 동접 예측 등의 목적으로 개발되었다. Linux PC/Mac에서 여러 개의 콘솔 창을 띄워 놓고, 이 코맨드를 이용하여 스트레스 상황을 연출할 수 있다.
 
-[^1]: 윈도우에서는 `iperf-stress` 실행파일의 첫 줄을 `c:\path-to-php-runtime\php.exe` 와 같이 수정하고, `Appkr/LoopCommand.php:275` 의 시스템 `iperf`의 경로를 수정해야 한다. 윈도우에서 동작은 검증되지 않았다. 
-[^2]: 본 툴은 결과 기록을 위해 sqlite를 사용한다. php 실행기에 sqlite 모듈이 없다면, 리눅스 `sudo apt-get install sqlite3 php5-sqlite`, Mac OS `brew install sqlite3` 로 의존성 패키지들을 설치한다.
+## 설치
 
-<a name="how-to-install"></a>
-## 설치 방법
+아래 요구사항을 확인하고, 프로젝트를 설치해 보자.
 
-Linux PC/Mac 시스템에 `iperf` 툴이 없다면
+- Linux 또는 Mac OS
+- iperf (`$ iperf -v` 로 확인 가능)
+- php5.4 이상 (`$ php -v` 로 확인 가능)
 
-~~~
+### 설치 방법
+
+Linux/Mac 시스템에 `iperf` 툴이 없다면, 아래 명령으로 설치하자.
+
+```bash
 # Linux
-sudo apt-get iperf
-
+$ sudo apt-get install iperf
 # Mac OS
-brew install iperf
-~~~
+$ brew install iperf
+```
 
-Git 프로젝트를 클론하고 `iperf-stress` 파일에 실행권한을 부여한다.
+Git 프로젝트를 클론하고 `iperf-stress` 파일에 실행권한을 부여한다. 컴포저 컴포넌트들을 업데이트한다. 결과값을 저장하기 위한 DB 도 만든다.
 
-~~~
-git clone git@src.airplug.co.kr:git/iperf-stress.git && chmod 755 iperf-stress/iperf-stress
-~~~
+**`참고`** 이 프로젝트는 컴퓨터에 설치한/된 `iperf` 외에, 별도로 빌드된 커스텀 [`appkr/iperf`](https://github.com/appkr/iperf) 를 vendor 디렉토리 아래에 설치한다. 컴포저 실행 중에 다운로드 받은 `appkr/iperf` 를 컴파일할 것인데, 의심스러우면 컴포저를 실행하기 전에 composer.json 에서 `scripts` 섹션을 지우고 나중에 수동으로 컴파일 하시기 바란다. 
 
-이 프로젝트에는 Novak이 수정한 `novak/iperf` 소스를 포함하고 있다. 이 `novak/iperf` 바이너리는 맥 OS X에서 컴파일되었는데, 설치하려는 시스템에 따라 다시 빌드해야 할 수도 있다.
-  
-~~~
-cd path-to/iperf-stress/vendor/novak/iperf-2.0.5
-./configure
-make clean
-make
-cd ../../bin && ln -s ../novak/iperf-2.0.5/src/iperf iperf && chmod 755 iperf
-~~~
+```bash
+$ git clone git@github.com:appkr/iperf-stress.git
+$ cd iperf-stress
+$ composer install
+$ chmod 755 iperf-stress
+$ touch database/database.sqlite
+```
 
-<a name="run"></a>
-# 실행
+## 실행
 
-~~~
-./iperf-stress command [options] [arguments]
-~~~
+### 서버 구동
 
-<a name="command"></a>
-## command
-`loop`, `history` 2개의 명령을 내장하고 있다.
+먼저 클라이언트에서 보낸 속도 측정 요청을 받아 줄 서버를 구동시킨다. 이 프로젝트와는 관련 없는 일반적인 `iperf` 명령 사용법이다.
 
-[`loop [options] [count]`](#command-loop)
-:`count`로 지정한 횟수만큼 `iperf` 테스트를 수행한다.
+```bash
+$ iperf -s
+```
 
-[`history [options] [limit]`](#command-history)
-:`limit`로 지정한 갯수만큼 과거 테스트 이력을 화면에 보여주거나, CSV로 추출한다.  
+### 명령 프로토타입 (signature)
 
-<a name="command-loop"></a>
-### ./iperf-stress loop
+`iperf-stress` 명령은 아래와 같은 Signature 를 가진다.
 
-`loop` 명령은 테스트 루프사이의 공백을 위한 `-S`, `novak/iperf`의 Upload/Download Swapping Patch가 적용되지 않은 서버를 테스트하기 위한 `-R` 옵션 외에는, 속도 측정을 위해 클라이언트에서 주로 사용하는 `iperf`의 기본 옵션을 거의 대부분 제공한다. *단, `-i`, `-t`, `-n` 옵션은 지원하지 않는다.*
+```bash
+$ ./iperf-stress 명령 [명령인자] [옵션1=값1 옵션2=값2 ...]
+```
 
-~~~
-# loop 명령에 대한 도움말 보기
-./iperf-stress help loop
-~~~
+### `loop` 명령
 
-~~~
-# loop 명령의 전체 Signature
-./iperf-stress loop [-S|--sleep[="..."]] [-R|--no-reverse] [-c|--client="..."] [-l|--len[="..."]] [-p|--port[="..."]] [-u|--udp] [-w|--window="..."] [-B|--bind="..."] [-M|--mss="..."] [-N|--nodelay] [count]
-~~~
+반복할 횟수를 명령 인자로 받는다 (기본값은 '1' 회). 명령 인자로 받은 만큼 속도측정을 수행하고 결과를 DB 에 기록한다. 가령, 5 번을 테스트하려면,
 
-아래는 옵션이다.
-`--sleep (-S)`            
-:테스트 loop 사이의 sleep 을 지정한다. *(default: 1)*
+```bash
+$ ./iperf-stress loop 5
+```
 
-`--no-reverse (-R)`       
-:Up/Down 스왑을 끈다. 즉, 이 옵션을 사용하면 Novak이 수정한 `iperf`를 사용하지 않고 시스템 `iperf`를 사용한다.
- 
-`--client (-c)`           
-:run in client mode, connecting to <host> *(default: "speedgiga1.airplug.com")*
+#### 옵션
 
-`--len (-l)`              
-:length of buffer to read or write *(default: 10000)*
+옵션은 `$ ./iperf-stress help loop` 로 확인할 수 있다.
 
-`--port (-p)`             
-:server port to connect to *(default: 5100)*
+옵션|설명
+---|---
+`--sleep (-s)`|테스트 loop 사이의 sleep 을 지정한다. **(default: 1)**
+`--reverse (-r)`|Up/Down 스왑을 적용한다.
+`--client (-c)`|클라이언트 모드로 동작하며, 옵션 값으로 지정한 서버로 접속한다. **(default: "localhost")**
+`--port (-p)`|접속할 서버의 포트 번호를 지정한다. **(default: 5001)**
+`--len (-l)`|한번에 읽고 쓸 버퍼량을 지정한다. udp 에는 적용되지 않는다. **(default: 10000)**
+`--udp (-u)`|TCP 대신 UDP 를 사용한다.
 
-`--udp (-u)`              
-:use UDP rather than TCP
+![](iperf-stress-img-01.png)
 
-`--window (-w)`           
-:TCP window size (socket buffer size)
+### `history` 명령
 
-`--bind (-B)`             
-:bind to <host>, an interface or multicast address
+출력/덤프할 레코드 갯수를 명령인자로 받는다 (기본값은 '전체'). 명령인자로 받은 수 만큼 DB 에 기록된 속도측정 이력을 테이블로 출력하거나, csv 형태로 Export 한다. 
 
-`--mss (-M)`              
-:set TCP maximum segment size
+#### 옵션 
 
-`--nodelay (-N)`          
-:set TCP no delay, disabling Nagle's Algorithm
+옵션은 `$ ./iperf-stress help history` 로 확인할 수 있다.
 
-#### 실행 예
+옵션|설명
+---|---
+`--extract (-e)`|`exports/` 디렉토리에 DB 테이블을 CSV 파일로 덤프한다.
+`--truncate (-t)`|테스트 이력을 모두 삭제한다.
 
-~~~
-./iperf-stress loop 2
-------------------------------------------------------------
-Client connecting to speedgiga1.airplug.com, TCP port 5100
-TCP window size:  129 KByte (default)
-------------------------------------------------------------
-[  9] local 192.168.11.5 port 49322 connected with 182.161.125.3 port 5100
-[ ID] Interval       Transfer     Bandwidth
-[  9]  0.0-10.0 sec  60.1 MBytes  50.4 Mbits/sec
-Test index 1 done.
-------------------------------------------------------------
-Client connecting to speedgiga1.airplug.com, TCP port 5100
-TCP window size:  129 KByte (default)
-------------------------------------------------------------
-[  9] local 192.168.11.5 port 49323 connected with 182.161.125.3 port 5100
-[ ID] Interval       Transfer     Bandwidth
-[  9]  0.0-10.0 sec  56.4 MBytes  47.3 Mbits/sec
-Test index 2 done.
-Test finished.
-~~~
+![](iperf-stress-img-02.png)
 
-> 위 명령으로 수행되는 실제 시스템 코맨드는 `iperf -c speedgiga1.airplug.com -p 5100 -l 10000` 이다. 코맨드를 2번 수행하고 코맨드 사이의 sleep은 1초 이다.
-> `./iperf-stress loop` 처럼 아무런 인자, 옵션 없이 실행할 경우, 코맨드를 1번 수행한다. 
+![](iperf-stress-img-04.png)
 
-<a name="command-history"></a>
-### ./iperf-stress history 
+---
 
-`history` 명령은 테스트 이력을 살펴보기 위한 목적으로 제공된다. 테스트 이력을 CSV로 추출하기 위한 `-e` 옵션이 없으면 화면에 테이블 형태로 결과값들을 출력한다.
+## 다운로드 속도 측정 (== Up/Down 스왑)*
 
-~~~
-# history 명령에 대한 도움말 보기
-./iperf-stress help history
-~~~
+시스템에 기본 설치되는 iperf 는 업로드 속도 측정이다. 클라이언트가 보낸 데이터가 서버에 얼마나 빨리 전달되는지 테스트하는 거다. **그러나, 우리가 중요하게 생각하는 것은 다운로드 속도!!!** 다운로드 속도 측정을 위해서는 Up/Down 스왑 패치를 적용한 `vendor/appkr/iperf/src/iperf` 툴을 이용한다. 
 
-~~~
-# history 명령의 전체 Signature
-./iperf-stress history [-e|--extract] [-t|--truncate] [limit]
-~~~
+1) 클라이언트 <-> 2) 랜케이블/Wi-Fi 액세스포인트/Lte 기지국 등의 액세스 네트워크 <-> 3) 인터넷 <-> 4) 원격서버 간의 통신 구조에서 2), 3) 의 속도를 의미한다. 클라이언트의 위치나 시간에 따라, 각 노드의 혼잡도에 따라 다른 Route 를 탈 수 있으며, 속도는 달라지게 된다. 여튼 중요한 것은 **속도 측정을 위한 서버에도 클라이언트와 동일한 iperf 툴이 설치되어야 한다** 는 것이다. 
 
-아래는 옵션이다.
+![](iperf-stress-img-03.png)
 
-`--extract (-e)`
-: `path-to/iperf-stress/exports` 에 CSV 파일로 저장한다.
+**`참고`** 다운로드 속도 측정은 위한 커스텀 `appkr/iperf` 툴은 컴포저 설치과정에서 컴파일되는데, 어떤 이유에서든 에러가 났다면 아래를 참고해서 다시 컴파일 할 수 있다.
 
-`--truncate (-t)`
-: 테스트 이력을 모두 삭제한다.
-
-#### 실행 예
-
-~~~
-./iperf-stress history 2
-+----+------+--------------------------------------------------+--------------------------------------------------+-------+-----------+---------------------+
-| id | pid  | command                                          | result                                           | speed | unit      | tested_at           |
-+----+------+--------------------------------------------------+--------------------------------------------------+-------+-----------+---------------------+
-| 44 | 2983 | iperf -c speedgiga1.airplug.com -l 10000 -p 5100 | [  9]  0.0-10.0 sec   110 MBytes  92.1 Mbits/sec | 92.1  | Mbits/sec | 2015-03-22 21:38:47 |
-| 43 | 2983 | iperf -c speedgiga1.airplug.com -l 10000 -p 5100 | [  9]  0.0-10.0 sec   108 MBytes  90.3 Mbits/sec | 90.3  | Mbits/sec | 2015-03-22 21:38:36 |
-+----+------+--------------------------------------------------+--------------------------------------------------+-------+-----------+---------------------+
-~~~
+```bash
+$ cd iperf-stress/vendor/appkr/iperf
+$ make clean
+$ ./configure
+$ make
+```

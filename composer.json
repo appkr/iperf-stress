@@ -1,6 +1,6 @@
 {
   "name": "appkr/iperf-stress",
-  "description": "Simple iperf stress test console command",
+  "description": "console command for 'iperf' stress test",
   "license": "MIT",
   "authors": [
     {
@@ -8,16 +8,32 @@
       "email": "juwonkim@me.com"
     }
   ],
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:appkr/iperf.git"
+    }
+  ],
   "require": {
-    "symfony/console": "~2.6",
-    "illuminate/database": "~5.0"
+    "php": ">=5.4",
+    "symfony/console": "2.7.*",
+    "illuminate/database": "5.1.*",
+    "illuminate/validation": "5.1.*",
+    "league/csv": "7.*",
+    "appkr/iperf": "@dev"
   },
   "autoload": {
     "psr-4": {
-      "Appkr\\": "Appkr"
+      "Appkr\\": "app/"
     },
     "classmap": [
       "models"
+    ]
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "cd ./vendor/appkr/iperf && ./configure",
+      "cd ./vendor/appkr/iperf && make"
     ]
   }
 }
