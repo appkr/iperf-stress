@@ -1,0 +1,28 @@
+{
+  "alias": "iperf-stress.phar",
+  "chmod": "0755",
+  "directories": [
+    "src",
+    "database"
+  ],
+  "files-bin": [
+    "vendor/bin/iperf"
+  ],
+  "finder": [
+    {
+      "name": "*.php",
+      "exclude": [
+        "Tests",
+        "tests"
+      ],
+      "in": "vendor"
+    }
+  ],
+  "git-version": "git-version",
+  "main": "bin/iperf-stress",
+  "output": "dist/iperf-stress_@git-version@.phar",
+  "replacements": {
+    "manifest_url": "http://appkr.github.io/iperf-stress/manifest.json"
+  },
+  "stub": true
+}

@@ -3,7 +3,6 @@
 namespace Appkr;
 
 use Carbon\Carbon;
-use History;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -44,7 +43,6 @@ class LoopCommand extends Command
     public function __construct()
     {
         $this->bootDatabase();
-        $this->checkDatabase();
 
         parent::__construct();
     }
@@ -141,7 +139,7 @@ class LoopCommand extends Command
         $this->loopSystemCommand($this->argument('count'));
 
         // Notify the result of execution.
-        return $this->output->writeln('<info>Test finished.</info>');
+        return $this->io->success('Test finished.');
     }
 
     /**
@@ -168,8 +166,8 @@ class LoopCommand extends Command
             $history = $this->persistOutput();
 
             $history
-                ? $this->output->writeln("<info>Test index {$index} done.</info>")
-                : $this->output->writeln("<error>Test index {$index} done with error.</error>");
+                ? $this->io->success("Test index {$index} done.")
+                : $this->io->error("Test index {$index} done with error.");
 
             sleep($this->option('sleep'));
         }
@@ -184,7 +182,7 @@ class LoopCommand extends Command
     {
         $command = [];
         $command[] = $this->option('reverse')
-            ? __DIR__ . '/../vendor/appkr/iperf/src/iperf'
+            ? __DIR__ . '/../vendor/bin/iperf'
             : 'iperf';
         $command[] = sprintf('-c %s', $this->option('client'));
         $command[] = sprintf('-p %d', $this->option('port'));

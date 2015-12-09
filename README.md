@@ -11,6 +11,7 @@
 - 설치
 - 실행
 - 다운로드 속도 측정
+- phar build
 
 ## 개요
 
@@ -43,8 +44,7 @@ Git 프로젝트를 클론하고 `iperf-stress` 파일에 실행권한을 부여
 $ git clone git@github.com:appkr/iperf-stress.git
 $ cd iperf-stress
 $ composer install
-$ chmod 755 iperf-stress
-$ touch database/database.sqlite
+$ chmod 755 bin/iperf-stress
 ```
 
 ## 실행
@@ -62,20 +62,22 @@ $ iperf -s
 `iperf-stress` 명령은 아래와 같은 Signature 를 가진다.
 
 ```bash
-$ ./iperf-stress 명령 [명령인자] [옵션1=값1 옵션2=값2 ...]
+$ bin/iperf-stress 명령 [명령인자] [옵션1=값1 옵션2=값2 ...]
 ```
+
+![](iperf-stress-img-00.png)
 
 ### `loop` 명령
 
 반복할 횟수를 명령 인자로 받는다 (기본값은 '1' 회). 명령 인자로 받은 만큼 속도측정을 수행하고 결과를 DB 에 기록한다. 가령, 5 번을 테스트하려면,
 
 ```bash
-$ ./iperf-stress loop 5
+$ bin/iperf-stress loop 5
 ```
 
 #### 옵션
 
-옵션은 `$ ./iperf-stress help loop` 로 확인할 수 있다.
+옵션은 `$ bin/iperf-stress help loop` 로 확인할 수 있다.
 
 옵션|설명
 ---|---
@@ -94,7 +96,7 @@ $ ./iperf-stress loop 5
 
 #### 옵션 
 
-옵션은 `$ ./iperf-stress help history` 로 확인할 수 있다.
+옵션은 `$ bin/iperf-stress help history` 로 확인할 수 있다.
 
 옵션|설명
 ---|---

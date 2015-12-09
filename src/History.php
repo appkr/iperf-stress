@@ -1,5 +1,7 @@
 <?php
 
+namespace Appkr;
+
 use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Validation\Factory as ValidatorFactory;
 use Symfony\Component\Translation\Translator;
@@ -41,14 +43,14 @@ class History extends Eloquent
      * @var array
      */
     protected static $rules = [
-        'count'  => ['numeric', 'max:999'],
-        'sleep'  => ['numeric', 'max:10'],
-        'client' => ['regex:(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$)'],
-        'len'    => ['numeric', 'max:100000'],
-        'port'   => ['numeric', 'max:65535'],
-        'window' => ['numeric'],
-        'mss'    => ['numeric'],
-        'limit'  => ['numeric'],
+        'count'   => ['numeric', 'max:999'],
+        'sleep'   => ['numeric', 'max:10'],
+        'client'  => ['regex:(^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$|^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$)'],
+        'len'     => ['numeric', 'max:100000'],
+        'port'    => ['numeric', 'max:65535'],
+        'window'  => ['numeric'],
+        'mss'     => ['numeric'],
+        'limit'   => ['numeric', 'max:999'],
     ];
 
     protected static $messages = [

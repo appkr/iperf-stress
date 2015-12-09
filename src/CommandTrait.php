@@ -2,13 +2,19 @@
 
 namespace Appkr;
 
-use History;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
 
 trait CommandTrait
 {
+    public $io;
+
+    public $input;
+
+    public $output;
+
     /**
      * Execute the command.
      *
@@ -18,6 +24,11 @@ trait CommandTrait
      */
     public function execute(InputInterface $input, OutputInterface $output)
     {
+        // Available styles. (symfony/console ~2.8 feature)
+        // title, section, text, comment, note, caution, listing, table,
+        // ask, askHidden, confirm, choice, success, error, warning
+        $this->io = new SymfonyStyle($input, $output);
+
         $this->input = $input;
         $this->output = $output;
 
@@ -64,47 +75,6 @@ trait CommandTrait
     public function option($key)
     {
         return $this->input->getOption($key);
-    }
-
-    /**
-     * Ask the user the given question.
-     *
-     * @param  string $question
-     * @return string
-     */
-    public function ask($question)
-    {
-        $question = '<comment>' . $question . '</comment> ';
-
-        return $this->getHelperSet()->get('dialog')->ask($this->output, $question);
-    }
-
-    /**
-     * Ask the user the given secret question.
-     *
-     * @param  string $question
-     * @return string
-     */
-    public function secret($question)
-    {
-        $question = '<comment>' . $question . '</comment> ';
-
-        return $this->getHelperSet()->get('dialog')->askHiddenResponse($this->output, $question, false);
-    }
-
-    /**
-     * Format input to textual table
-     *
-     * @param  array  $headers
-     * @param  array  $rows
-     * @param  string $style
-     * @return void
-     */
-    public function table(array $headers, array $rows, $style = 'default')
-    {
-        $table = new Table($this->output);
-
-        return $table->setHeaders($headers)->setRows($rows)->setStyle($style)->render();
     }
 
     /**

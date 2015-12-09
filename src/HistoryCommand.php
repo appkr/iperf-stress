@@ -3,12 +3,10 @@
 namespace Appkr;
 
 use Carbon\Carbon;
-use History;
 use League\Csv\Writer;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
-use Illuminate\Database\Capsule\Manager as Capsule;
 
 class HistoryCommand extends Command
 {
@@ -17,7 +15,6 @@ class HistoryCommand extends Command
 
     public function __construct() {
         $this->bootDatabase();
-        $this->checkDatabase();
 
         parent::__construct();
     }
@@ -61,7 +58,7 @@ class HistoryCommand extends Command
 
         // Delegate "truncate" job, and early return.
         if ($this->option('truncate')) {
-            if ($this->ask('Are you sure you want to delete all the test histories? <info>[y|N]</info>') == 'y') {
+            if ($this->io->ask('Are you sure you want to delete all the test histories? <info>[y|N]</info>', 'N') == 'y') {
                 $this->truncate();
             }
 
@@ -94,8 +91,8 @@ class HistoryCommand extends Command
         }
 
         $path = sprintf(
-            '%s/../exports/iperf-stress-%d.csv',
-            __DIR__,
+            '%s/./iperf-stress-%d.csv',
+            getenv('HOME'),
             Carbon::now()->timestamp
         );
 
@@ -112,7 +109,7 @@ class HistoryCommand extends Command
             $collection->toArray()
         );
 
-        $this->output->writeln("<info>CSV file created at {$path}</info>");
+        $this->io->success("CSV file created at {$path}");
 
         return;
     }
@@ -139,9 +136,9 @@ class HistoryCommand extends Command
     protected function render($limit = null) {
         $collection = $this->fetchHistory($limit);
 
-        $headers = Capsule::schema()->getColumnListing('histories');
+        $headers = $this->getColumnListings();
 
-        $this->table($headers, $collection->toArray());
+        $this->io->table($headers, $collection->toArray());
 
         return;
     }
@@ -166,7 +163,7 @@ class HistoryCommand extends Command
     protected function truncate() {
         History::truncate();
 
-        $this->output->writeln("<info>test history is now empty.</info>");
+        $this->io->success("test history is now empty.");
 
         return;
     }
